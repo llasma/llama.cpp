@@ -17,6 +17,7 @@
 #include <stdio.h>  // for GGML_ASSERT
 
 #include "ggml-aarch64.h"
+#include "gemm-config.h"
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Woverlength-strings"
@@ -598,6 +599,19 @@ size_t quantize_q4_0_8x8(const float * restrict src, void * restrict dst, int64_
     return quantize_q4_0_nr_bl(src, dst, nrow, n_per_row, 8, 8);
 }
 
+void ggml_gemv_i2_i8_s(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+#if defined(ACT_PARALLEL)
+    for (int64_t iir0 = 0; iir0 < nc; iir0 += 1) {
+        ggml_vec_dot_i2_i8_s(n, s + iir0, 1, vx + iir0 * n / 4, n, vy, 0, 1);
+    }
+#else
+    const int64_t blck_0 = 16;
+    for (int64_t iir0 = 0; iir0 < nc; iir0 += blck_0) {
+        ggml_vec_dot_i2_i8_s(n, s + iir0, 1, vx + iir0 * n / 4, n, vy, 0, blck_0);
+    }
+#endif
+}
+
 void ggml_gemv_q4_0_4x4_q8_0(int n, float * restrict s, size_t bs, const void * restrict vx, const void * restrict vy, int nr, int nc) {
     const int qk = QK8_0;
     const int nb = n / qk;
@@ -1017,6 +1031,44 @@ void ggml_gemv_q4_0_8x8_q8_0(int n, float * restrict s, size_t bs, const void * 
             for (int j = 0; j < ncols_interleaved; j++) s[x * ncols_interleaved + j] = sumf[j];
         }
     }
+}
+
+void ggml_gemm_i2_i8_s(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, const void * GGML_RESTRICT vy, int nr, int nc) {
+#if defined(ACT_PARALLEL)
+    const int64_t row_block = ROW_BLOCK_SIZE;
+    const int64_t col_block = COL_BLOCK_SIZE;
+
+    for (int64_t c0 = 0; c0 < nc; c0 += col_block) {
+        int64_t cur_c = (c0 + col_block <= nc) ? col_block : (nc - c0);
+        for (int64_t r0 = 0; r0 < nr; r0 += row_block) {
+            int64_t cur_r = (r0 + row_block <= nr) ? row_block : (nr - r0);
+            const void * vy_r = (const uint8_t *)vy + r0 * n;
+            for (int64_t c = 0; c < cur_c; ++c) {
+                const int64_t col = c0 + c;
+                float * s_col = s + col;
+                const void * vx_col = (const uint8_t *)vx + col * n / 4;
+                ggml_vec_dot_i2_i8_s(n, s_col + r0 * bs, bs, vx_col, n, vy_r, n, cur_r);
+            }
+        }
+    }
+#else
+    const int64_t row_block = ROW_BLOCK_SIZE;
+    const int64_t col_block = COL_BLOCK_SIZE;
+
+    for (int64_t r0 = 0; r0 < nr; r0 += row_block) {
+            int64_t cur_r = (r0 + row_block <= nr) ? row_block : (nr - r0);
+        for (int64_t c0 = 0; c0 < nc; c0 += col_block) {
+            int64_t cur_c = (c0 + col_block <= nc) ? col_block : (nc - c0);
+            const void * vx_c = (const uint8_t *)vx + c0 * n / 4;
+            for (int64_t r = 0; r < cur_r; ++r) {
+                const int64_t row = r0 + r;
+                float * s_row = s + row * bs;
+                const void * vy_row = (const uint8_t *)vy + row * n;
+                ggml_vec_dot_i2_i8_s(n, s_row + c0, bs, vx_c, n, vy_row, n, cur_c);
+            }
+        }
+    }
+#endif
 }
 
 void ggml_gemm_q4_0_4x4_q8_0(int n, float * restrict s, size_t bs, const void * restrict vx, const void * restrict vy, int nr, int nc) {

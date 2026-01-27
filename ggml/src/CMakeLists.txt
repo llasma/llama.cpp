@@ -1151,6 +1151,17 @@ if (CMAKE_OSX_ARCHITECTURES      STREQUAL "arm64" OR
         if (GGML_SVE)
             list(APPEND ARCH_FLAGS -march=armv8.6-a+sve)
         endif()
+
+        check_cxx_source_compiles("#include <arm_neon.h>\nint main(){ int8x16_t a{}, b{}; int32x4_t s = vdupq_n_s32(0); s = vdotq_s32(s,a,b); (void)s; return 0; }" GGML_COMPILER_SUPPORT_DOTPROD)
+        if (GGML_COMPILER_SUPPORT_DOTPROD)
+            add_compile_definitions(__ARM_FEATURE_DOTPROD)
+        else()
+            check_cxx_compiler_flag("-march=armv8.2-a+dotprod" COMPILER_SUPPORTS_ARMV82_DOTPROD)
+            if (COMPILER_SUPPORTS_ARMV82_DOTPROD)
+                list(APPEND ARCH_FLAGS -march=armv8.2-a+dotprod)
+                add_compile_definitions(__ARM_FEATURE_DOTPROD)
+            endif()
+        endif()
     endif()
 elseif (CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64" OR CMAKE_GENERATOR_PLATFORM_LWR MATCHES "^(x86_64|i686|amd64|x64|win32)$" OR
         (NOT CMAKE_OSX_ARCHITECTURES AND NOT CMAKE_GENERATOR_PLATFORM_LWR AND

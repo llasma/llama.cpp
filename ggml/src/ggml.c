@@ -1174,7 +1174,12 @@ static const struct ggml_type_traits type_traits[GGML_TYPE_COUNT] = {
         .blck_size                = 1,
         .type_size                = sizeof(int8_t),
         .is_quantized             = true,
+        .to_float                 = (ggml_to_float_t) dequantize_row_i2_s,
         .vec_dot                  = (ggml_vec_dot_t) ggml_vec_dot_i2_i8_s,
+        .gemv                     = (ggml_gemv_t) ggml_gemv_i2_i8_s,
+        .gemm                     = (ggml_gemm_t) ggml_gemm_i2_i8_s,
+        .nrows                    = 1,
+        .ncols                    = 4,
         .vec_dot_type             = GGML_TYPE_I8_S,
         .nrows                    = 1,
     },
@@ -12487,12 +12492,36 @@ static void ggml_compute_forward_mul_mat_one_chunk(
                 //    vec_dot(ne00, &dst_col[ir0], src0_row + ir0*nb01, src1_col);
                 //}
 
-                for (int64_t ir0 = iir0; ir0 < iir0 + blck_0 && ir0 < ir0_end; ir0 += num_rows_per_vec_dot) {
-                    if (src0->type == GGML_TYPE_I2_S) {
-                        vec_dot(ne00, &tmp[ir0 - iir0], (num_rows_per_vec_dot > 1 ? 16 : 0), src0_row + ir0 * nb01 / 4, (num_rows_per_vec_dot > 1 ? nb01 : 0), src1_col_de, (num_rows_per_vec_dot > 1 ? src1_col_stride : 0), num_rows_per_vec_dot);
-                        tmp[ir0 - iir0] = (tmp[ir0 - iir0]  - act_sums[i1]) / (act_scales[i1]) * (*scale);
-                    } else {
-                        vec_dot(ne00, &tmp[ir0 - iir0], (num_rows_per_vec_dot > 1 ? 16 : 0), src0_row + ir0 * nb01, (num_rows_per_vec_dot > 1 ? nb01 : 0), src1_col, (num_rows_per_vec_dot > 1 ? src1_col_stride : 0), num_rows_per_vec_dot);
+                // for (int64_t ir0 = iir0; ir0 < iir0 + blck_0 && ir0 < ir0_end; ir0 += num_rows_per_vec_dot) {
+                //     if (src0->type == GGML_TYPE_I2_S) {
+                //         vec_dot(ne00, &tmp[ir0 - iir0], (num_rows_per_vec_dot > 1 ? 16 : 0), src0_row + ir0 * nb01 / 4, (num_rows_per_vec_dot > 1 ? nb01 : 0), src1_col_de, (num_rows_per_vec_dot > 1 ? src1_col_stride : 0), num_rows_per_vec_dot);
+                //         tmp[ir0 - iir0] = (tmp[ir0 - iir0]  - act_sums[i1]) / (act_scales[i1]) * (*scale);
+                //     } else {
+                //         vec_dot(ne00, &tmp[ir0 - iir0], (num_rows_per_vec_dot > 1 ? 16 : 0), src0_row + ir0 * nb01, (num_rows_per_vec_dot > 1 ? nb01 : 0), src1_col, (num_rows_per_vec_dot > 1 ? src1_col_stride : 0), num_rows_per_vec_dot);
+                //     }
+                // }
+
+                if (src0->type == GGML_TYPE_I2_S && iir0 + blck_0 - 1 < ir0_end) {
+                    // 16 rows per vector dot product, so we can process 16 rows at a time blck == 16
+                    // this is a bit of a hack, we should probably have a better way to handle this
+                    vec_dot(ne00, &tmp[0], 1, 
+                        src0_row + iir0 * nb01 / 4, nb01, 
+                        src1_col_de, 0, 16);
+                    
+                    // post compute activation scaling
+                    for (int row = 0; row < 16; row++) {
+                        tmp[row] = (tmp[row] - act_sums[i1]) / (act_scales[i1]) * (*scale);
+                    }
+                }
+                else
+                {
+                    for (int64_t ir0 = iir0; ir0 < iir0 + blck_0 && ir0 < ir0_end; ir0 += num_rows_per_vec_dot) {
+                        if (src0->type == GGML_TYPE_I2_S) {
+                            vec_dot(ne00, &tmp[ir0 - iir0], 0, src0_row + ir0 * nb01 / 4, 0, src1_col_de, 0, 1);
+                            tmp[ir0 - iir0] = (tmp[ir0 - iir0]  - act_sums[i1]) / (act_scales[i1]) * (*scale);
+                        } else {
+                            vec_dot(ne00, &tmp[ir0 - iir0], (num_rows_per_vec_dot > 1 ? 16 : 0), src0_row + ir0 * nb01, (num_rows_per_vec_dot > 1 ? nb01 : 0), src1_col, (num_rows_per_vec_dot > 1 ? src1_col_stride : 0), num_rows_per_vec_dot);
+                        }
                     }
                 }
 
@@ -13207,11 +13236,11 @@ UseGgmlGemm2:;
     // If the chunking is poor for the number of threads on this setup, scrap the whole plan.  Re-chunk it by thread.
     //   Also, chunking by thread was measured to have perform better on NUMA systems.  See https://github.com/ggerganov/llama.cpp/pull/6915
     //   In theory, chunking should be just as useful on NUMA and non NUMA systems, but testing disagreed with that.
-    if (nchunk0 * nchunk1 < nth * 4 || ggml_is_numa()) {
+    // if (nchunk0 * nchunk1 < nth * 4 || ggml_is_numa()) {
         // distribute the thread work across the inner or outer loop based on which one is larger
         nchunk0 = nr0 > nr1 ? nth : 1; // parallelize by src0 rows
         nchunk1 = nr0 > nr1 ? 1 : nth; // parallelize by src1 rows
-    }
+    // }
 
     // The number of elements in each chunk
     const int64_t dr0 = (nr0 + nchunk0 - 1) / nchunk0;
@@ -13228,13 +13257,45 @@ UseGgmlGemm2:;
 
         // If there are more than three rows in src1, use gemm; otherwise, use gemv.
         if (gemm && (ne11 > 3)) {
-            gemm(ne00, (float *)((char *) dst->data) + src0_start, ne01, (const char *) src0->data + src0_start * nb01,
-                 (const char *) src1_wdata, ne11 - ne11 % 4, src0_end - src0_start);
+            if (src0->type == GGML_TYPE_I2_S) {
+                float tmp[(src0_end - src0_start)*(ne11 - ne11 % 4)];
+                const float * scale      = (float * )((uint8_t*) (src0->data) + (ne00 * ne01 / 4));
+                const float * act_scales = (const float*) ((const char *) src1_wdata + (ne11 * ne10));
+                const int32_t * act_sums   = (const int32_t*) ((const char *) act_scales + (ne11) * sizeof(float));
+                gemm(ne00, &tmp[0], src0_end - src0_start, (const char *) src0->data + src0_start * nb01 / 4,
+                    (const char *) src1_wdata, ne11 - ne11 % 4, src0_end - src0_start);
+                for (int col = 0; col < ne11 - ne11 % 4; col++) {
+                    for (int row = 0; row < src0_end - src0_start; row++) {
+                        tmp[col * (src0_end - src0_start) + row] = (tmp[col * (src0_end - src0_start) + row] - act_sums[col]) / (act_scales[col]) * (*scale);
+                    }
+                    memcpy((float *)((char *) dst->data + (col * nb1)) + src0_start, tmp + col * (src0_end - src0_start), (src0_end - src0_start) * sizeof(float));
+                }
+            }
+            else {
+                gemm(ne00, (float *)((char *) dst->data) + src0_start, ne01, (const char *) src0->data + src0_start * nb01,
+                    (const char *) src1_wdata, ne11 - ne11 % 4, src0_end - src0_start);
+            }
         }
         for (int iter = gemm ? ne11 - ne11 % 4 : 0; iter < ne11; iter++) {
-            gemv(ne00, (float *)((char *) dst->data + (iter * nb1)) + src0_start, ne01,
-                 (const char *) src0->data + src0_start * nb01, (const char *) src1_wdata + (src1_col_stride * iter), 1,
-                 src0_end - src0_start);
+            if (src0->type == GGML_TYPE_I2_S) {
+                float tmp[src0_end - src0_start];
+                const float * scale      = (float * )((uint8_t*) (src0->data) + (ne00 * ne01 / 4));
+                const float * act_scales = (const float*) ((const char *) src1_wdata + (ne11 * ne10));
+                const int32_t * act_sums   = (const int32_t*) ((const char *) act_scales + (ne11) * sizeof(float));
+                gemv(ne00, &tmp[0], ne01,
+                    (const char *) src0->data + src0_start * nb01 / 4,
+                    (const char *) src1_wdata + (src1_col_stride * iter),
+                    1, src0_end - src0_start);
+                for (int row = 0; row < src0_end - src0_start; row++) {
+                    tmp[row] = (tmp[row] - act_sums[iter]) / (act_scales[iter]) * (*scale);
+                }
+                memcpy((float *)((char *) dst->data + (iter * nb1)) + src0_start, tmp, (src0_end - src0_start) * sizeof(float));
+            }
+            else {
+                gemv(ne00, (float *)((char *) dst->data + (iter * nb1)) + src0_start, ne01,
+                (const char *) src0->data + src0_start * nb01, (const char *) src1_wdata + (src1_col_stride * iter), 1,
+                src0_end - src0_start);
+            }
         }
         return;
     }
@@ -14008,6 +14069,53 @@ static void ggml_compute_forward_get_rows_q(
     }
 }
 
+static void ggml_compute_forward_get_rows_i2_s(
+            struct ggml_compute_params * params,
+            struct ggml_tensor * dst) {
+
+    struct ggml_tensor * src0 = dst->src[0];
+    struct ggml_tensor * src1 = dst->src[1];
+
+    GGML_TENSOR_BINARY_OP_LOCALS
+
+    const int64_t nc = ne00;
+    const int64_t nr = ggml_nelements(src1);
+
+    const enum ggml_type type = src0->type;
+
+    assert(ne0  == nc);
+    assert(ne02 == ne11);
+    assert(nb00 == ggml_type_size(type));
+    assert(ggml_nrows(dst) == nr);
+
+    const int ith = params->ith;
+    const int nth = params->nth;
+
+    // rows per thread
+    const int dr = (nr + nth - 1)/nth;
+
+    // row range for this thread
+    const int ir0 = dr*ith;
+    const int ir1 = MIN(ir0 + dr, nr);
+
+    const uint8_t * base = (const uint8_t *) src0->data;
+    const size_t packed_bytes_total = (size_t) (ggml_nelements(src0) / 4);
+    const float  scl = *(const float *)(base + packed_bytes_total);
+
+    for (int64_t i = ir0; i < ir1; ++i) {
+        const int64_t i12 = i/(ne11*ne10);
+        const int64_t i11 = (i - i12*ne11*ne10)/ne10;
+        const int64_t i10 = (i - i12*ne11*ne10 - i11*ne10);
+        const int64_t i01 = *(int32_t *) ((char *) src1->data + i10*nb10 + i11*nb11 + i12*nb12);
+
+        GGML_ASSERT(i01 >= 0 && i01 < ne01);
+
+        dequantize_row_i2_s(
+                (const void *) ((char *) src0->data + i01*nb01/4 + i11*nb02/4 + i12*nb03/4),
+                     (float *) ((char *)  dst->data + i10*nb1  + i11*nb2  + i12*nb3), nc, scl);
+    }
+}
+
 static void ggml_compute_forward_get_rows_f16(
         const struct ggml_compute_params * params,
               struct ggml_tensor * dst) {
@@ -14179,6 +14287,9 @@ static void ggml_compute_forward_get_rows(
             {
                 ggml_compute_forward_get_rows_f32(params, dst);
             } break;
+        case GGML_TYPE_I2_S:
+            ggml_compute_forward_get_rows_i2_s(params, dst);
+            break;
         default:
             {
                 GGML_ABORT("fatal error");
