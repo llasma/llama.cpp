@@ -27,8 +27,9 @@ The theories and visions of LLASMA will be too big to fit in one paragraph, as w
 
 
 <img src="cmakelists.png">
+```
                         Figure 2
-
+```
 <center>
 <p style="text-align: center;">Centered Text</p>
 </center>
