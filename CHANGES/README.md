@@ -29,12 +29,16 @@ The theories and visions of LLASMA will be too big to fit in one paragraph, as w
 
 1. The "entry point" to FORTH/Phoscript shell is show in figure 1 above, around line 843 where main.cpp waits for user input.
 
+- [https://github.com/llasma/llama.cpp/blob/20260421/examples/main/main.cpp](https://github.com/llasma/llama.cpp/blob/20260421/examples/main/main.cpp)
+
 
 <img src="cmakelists.png">
 
 ```
                         Figure 2
 ```
+
+- [https://github.com/llasma/llama.cpp/blob/20260421/common/CMakeLists.txt](https://github.com/llasma/llama.cpp/blob/20260421/common/CMakeLists.txt)
 
 <center>
 <p style="text-align: center;">Centered Text</p>
