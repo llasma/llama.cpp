@@ -18,6 +18,10 @@ The goal is to create **LLASMA agents**: systems that maintain a clear separatio
 
 ## B. How We Code It
 
+The theories and visions of LLASMA will be too big to fit in one paragraph, as we believe it is the MOST significant breakthrough since ChatGPT itself -- so we move that to the end, and to entertain the impatient CODERS first -- no non-sense.
+
+
+
 
 
 ## Philosophy
