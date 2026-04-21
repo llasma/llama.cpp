@@ -1,3 +1,23 @@
+<!-- markdownlint-disable-file -->
+# LLASMA: LargeLanguage + StackMachine Architecture
+
+- A. [Introduction](https://github.com/llasma/llama.cpp/tree/20260421/CHANGES)
+- B. [How We Code It](https://github.com/llasma/llama.cpp/tree/20260421/CHANGES#b-how-we-code-it)
+- C. [Install-Run-Test-Contribute](https://github.com/llasma/llama.cpp/tree/20260421/CHANGES#c-install)
+- D. [Theories & Visions](https://github.com/llasma/llama.cpp/tree/20260421/CHANGES#d-theories--visions)
+
+## A. Introduction
+
+**LLM inference in pure C/C++ with embedded cxxforth stack machine + Microsoft BitNet support**
+
+LLASMA is a purpose-built fork of [llama.cpp](https://github.com/ggerganov/llama.cpp) (on the `20260421` branch) that integrates a **trusted Forth-based stack machine** (via [cxxforth](https://github.com/kristopherjohnson/cxxforth)) directly into the inference loop.
+
+The goal is to create **LLASMA agents**: systems that maintain a clear separation between:  
+- **untrusted probabilistic knowledge** (from the LLM), and  
+- **trusted executable skills** (implemented as reliable Forth words / Phoscript primitives in the stack machine).
+
+---
+
 # llama.cpp
 
 ![llama](https://user-images.githubusercontent.com/1991296/230134379-7181e485-c521-4d23-a0d6-f7b3b61ba524.png)
