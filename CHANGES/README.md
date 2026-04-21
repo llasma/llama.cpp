@@ -49,6 +49,12 @@ The theories and visions of LLASMA will be too big to fit in one paragraph, as w
     forth_vm.cpp
 ```
 
+<img src="forth.png">
+
+```
+                        Figure 3
+```
+
 
 ## Philosophy
 
