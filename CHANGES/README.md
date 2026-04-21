@@ -10,7 +10,7 @@
 
 **LLM inference in pure C/C++ with embedded cxxforth stack machine + Microsoft BitNet support**
 
-This is a purpose-built fork of [llama.cpp](https://github.com/ggerganov/llama.cpp) (on the `20260421` branch) that integrates a **trusted Forth-based stack machine** (via [cxxforth](https://github.com/kristopherjohnson/cxxforth)) directly into the inference loop.
+LLASMA is a purpose-built fork of [llama.cpp](https://github.com/ggerganov/llama.cpp) (on the `20260421` branch) that integrates a **trusted Forth-based stack machine** (via [cxxforth](https://github.com/kristopherjohnson/cxxforth)) directly into the inference loop.
 
 The goal is to create **LLASMA agents**: systems that maintain a clear separation between  
 - **untrusted probabilistic knowledge** (from the LLM), and  
