@@ -91,6 +91,8 @@ https://github.com/llasma/llama.cpp/blob/20260421/CHANGES/source_files/ggml-bitn
 
 soft link BitNet/models
 
+## D. Theories & Visions
+
 ## Philosophy
 
 - Start with a tiny, auditable core of primitive stack operations (`DUP`, `SWAP`, `DROP`, `+`, `@`, `!`, `:`, `;`, etc.).
