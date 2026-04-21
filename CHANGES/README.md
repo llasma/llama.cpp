@@ -1,3 +1,5 @@
+<!-- markdownlint-disable-file -->
+
 # LLASMA
 
 2026-04-21
