@@ -32,6 +32,8 @@ The theories and visions of LLASMA will be too big to fit in one paragraph, as w
 <p style="text-align: center;">Centered Text</p>
 </center>
 
+| left | centre | right |
+
 
 - Figure 2
 
