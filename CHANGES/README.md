@@ -89,6 +89,7 @@ https://github.com/llasma/llama.cpp/blob/20260421/CHANGES/source_files/ggml-bitn
                         Figure 7
 ```
 
+soft link BitNet/models
 
 ## Philosophy
 
