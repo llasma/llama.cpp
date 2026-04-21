@@ -74,6 +74,7 @@ The theories and visions of LLASMA will be too big to fit in one paragraph, as w
                         Figure 6
 ```
 
+Seems to have hallucination! But now we can investigate such hallucination by using an internal FORTH Phoscript shell!!
 
 ## Philosophy
 
