@@ -20,8 +20,12 @@ The goal is to create **LLASMA agents**: systems that maintain a clear separatio
 
 The theories and visions of LLASMA will be too big to fit in one paragraph, as we believe it is the MOST significant breakthrough since ChatGPT itself -- so we move that to the end, and to entertain the impatient CODERS first -- no non-sense.
 
-<img src="main_readline.png">
-- Figure 1
+<img src="main_readline.png"
+
+```
+                        Figure 1
+```
+
 
 1. The "entry point" to FORTH/Phoscript shell is show in figure 1 above, around line 843 where main.cpp waits for user input.
 
