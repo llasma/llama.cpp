@@ -93,6 +93,10 @@ soft link BitNet/models
 
 ## D. Theories & Visions
 
+1. [Omnihash & DJSON Decentralised JSON](https://omnixtar.github.io/contract/)
+
+2. Omni*Web & Omniscientia
+
 ## Philosophy
 
 - Start with a tiny, auditable core of primitive stack operations (`DUP`, `SWAP`, `DROP`, `+`, `@`, `!`, `:`, `;`, etc.).
