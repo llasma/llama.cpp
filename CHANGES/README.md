@@ -6,7 +6,7 @@
 
 (One day after 420!!)
 
-# LLASMA: Large Language + Stack Machine Architecture
+# LLASMA: LargeLanguage + StackMachine Architecture
 
 **LLM inference in pure C/C++ with embedded cxxforth stack machine + Microsoft BitNet support**
 
