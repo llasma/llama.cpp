@@ -37,11 +37,9 @@ bool ForthVM::execute(const std::string& command, llama_context* ctx) {
     
     if (tokens[0]=="FORTH") {
       std::cout << "  is FORTH !!";      
-/*
-# Source - https://stackoverflow.com/a/19082779
+/* # Source - https://stackoverflow.com/a/19082779
 # Posted by Dietmar Kühl, modified by community. See post 'Timeline' for change history
-# Retrieved 2026-04-20, License - CC BY-SA 3.0
-*/
+# Retrieved 2026-04-20, License - CC BY-SA 3.0 */
       // std::string array[] = { "s1", "s2" };
       std::vector<char*> vec;
       std::transform(std::begin(tokens), std::end(tokens),
