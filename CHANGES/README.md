@@ -38,7 +38,16 @@ The theories and visions of LLASMA will be too big to fit in one paragraph, as w
                         Figure 2
 ```
 
+2. As shown in figure 2, the `add_library` directive in `CMakeLists.txt` at line 53 includes FORTH related files from line 71 to 74:
+
 - [https://github.com/llasma/llama.cpp/blob/20260421/common/CMakeLists.txt](https://github.com/llasma/llama.cpp/blob/20260421/common/CMakeLists.txt)
+
+```
+    cxxforth.h
+    cxxforth.cpp
+    forth_vm.h
+    forth_vm.cpp
+```
 
 <center>
 <p style="text-align: center;">Centered Text</p>
