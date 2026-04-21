@@ -55,17 +55,22 @@ The theories and visions of LLASMA will be too big to fit in one paragraph, as w
                         Figure 3
 ```
 
-<img src="llama-cli.png">
+<img src="python-compile.png">
 
 ```
                         Figure 4
+
+<img src="llama-cli.png">
+
+```
+                        Figure 5
 ```
 
 
 <img src="llasma-run.png">
 
 ```
-                        Figure 5
+                        Figure 6
 ```
 
 
