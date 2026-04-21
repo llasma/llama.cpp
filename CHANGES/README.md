@@ -22,6 +22,8 @@ The theories and visions of LLASMA will be too big to fit in one paragraph, as w
 
 <img src="main_readline.png">
 
+1. The "entry point" to FORTH/Phoscript shell is show in figure 1 above, around line 843 where main.cpp waits for user input.
+
 
 
 ## Philosophy
