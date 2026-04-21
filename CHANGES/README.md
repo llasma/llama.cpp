@@ -76,6 +76,20 @@ The theories and visions of LLASMA will be too big to fit in one paragraph, as w
 
 Seems to have hallucination! But now we can investigate such hallucination by using an internal FORTH Phoscript shell!!
 
+
+## C. Install
+
+https://github.com/microsoft/BitNet/blob/main/src/ggml-bitnet-mad.cpp
+
+https://github.com/llasma/llama.cpp/blob/20260421/CHANGES/source_files/ggml-bitnet-mad.cpp
+
+<img src="ggml.png">
+
+```
+                        Figure 7
+```
+
+
 ## Philosophy
 
 - Start with a tiny, auditable core of primitive stack operations (`DUP`, `SWAP`, `DROP`, `+`, `@`, `!`, `:`, `;`, etc.).
