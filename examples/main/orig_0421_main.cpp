@@ -4,8 +4,6 @@
 #include "log.h"
 #include "sampling.h"
 #include "llama.h"
-#include "forth_vm.h"
-// #include "common/forth_vm.h"
 
 #include <cassert>
 #include <cstdio>
@@ -140,11 +138,6 @@ static std::string chat_add_and_format(struct llama_model * model, std::vector<c
 int main(int argc, char ** argv) {
     common_params params;
     g_params = &params;
-    
-    // In main() or interactive loop setup:
-    ForthVM forth_vm;  // Instantiate once
-    
-    
     if (!common_params_parse(argc, argv, params, LLAMA_EXAMPLE_MAIN, print_usage)) {
         return 1;
     }
@@ -653,8 +646,7 @@ int main(int argc, char ** argv) {
                     n_eval = params.n_batch;
                 }
 
-                // LOG_DBG("eval: %s\n", string_from(ctx, embd).c_str());
-                LOG_DBG("  <eval: %s />  ", string_from(ctx, embd).c_str());
+                LOG_DBG("eval: %s\n", string_from(ctx, embd).c_str());
 
                 if (llama_decode(ctx, llama_batch_get_one(&embd[i], n_eval, n_past, 0))) {
                     LOG_ERR("%s : failed to eval\n", __func__);
@@ -841,33 +833,6 @@ int main(int argc, char ** argv) {
                 bool another_line = true;
                 do {
                     another_line = console::readline(line, params.multiline_input);
-                    
-                    // === NEW: Command Mode Detection ===
-                    // Check if input starts with command prefix (e.g., '!')
-                    if (!line.empty() && line[0] == '!') {
-
-                        // Strip prefix and execute as Forth command
-                        std::string command = line.substr(1);  // remove '!'
-
-                        // if (forth_vm.execute(command, ctx.get())) {
-                        if (forth_vm.execute(command, ctx)) {
-                            // Optional: output result to user
-                            if (forth_vm.has_value()) {
-                                printf("\x1b[32m[Forth] Result: %.4g\x1b[0m\n", forth_vm.top_value());
-                            } else if (forth_vm.has_string()) {
-                                printf("\x1b[32m[Forth] Result: %s %d\x1b[0m\n", forth_vm.top_string().c_str(), forth_vm.size());
-                            }
-                        } else {
-                            fprintf(stderr, "\x1b[31m[Forth] Command execution failed\x1b[0m\n");
-                        }
-                        // Clear buffer and skip tokenization for this input
-                        line.clear();
-                        continue;
-                    }
-                    // === END NEW ===
-    
-                    
-                    
                     buffer += line;
                 } while (another_line);
 
