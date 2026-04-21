@@ -1,5 +1,11 @@
 # LLASMA
 
+- RTFM-CHANGES!!
+
+1. Let's practise keeping track of changes in forks in CHANGES directory -- all caps so it will show at top.
+
+2. [CHANGES/README.md](CHANGES/README.md) summary or updates.
+
 ---
 
 # llama.cpp
