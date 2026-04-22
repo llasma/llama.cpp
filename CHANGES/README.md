@@ -93,7 +93,7 @@ soft link BitNet/models
 
 ## D. Theories & Visions
 
-1. Omnihash Contract -- a new kind of Free Software License, with new clauses on Separation of Disclosure and Royalties:
+1. Omnihash Contract -- a new kind of Free Software License, with new clauses on **Separation of Disclosure and Royalties**:
 
 - Other parties may inspect and test the code for non-commercial puroses, including research (DISCLOSURE) BUT must PAY the owners an agreed fees for commercial operations, including government funded activities (ROYALTIES).
 
