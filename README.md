@@ -16,6 +16,16 @@ The goal is to create **LLASMA agents**: systems that maintain a clear separatio
 - **untrusted probabilistic knowledge** (from the LLM), and  
 - **trusted executable skills** (implemented as reliable Forth words / Phoscript primitives in the stack machine).
 
+
+## Omnihash Contract Free Software License
+
+Omnihash Contract -- a new kind of Free Software License, with new clauses on Separation of Disclosure and Royalties:
+
+- Other parties may inspect and test the code for non-commercial puroses, including research (DISCLOSURE) BUT must PAY the owners an agreed fees for commercial operations, including government funded activities (ROYALTIES).
+
+- [Omnihash & DJSON Decentralised JSON](https://omnixtar.github.io/contract/)
+
+
 ---
 
 # llama.cpp
