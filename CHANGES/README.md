@@ -95,7 +95,7 @@ soft link BitNet/models
 
 1. [Omnihash & DJSON Decentralised JSON](https://omnixtar.github.io/contract/)
 
-2. Omni*Web & Omniscientia
+2. [Omni*Web & Omniscientia](https://omnixtar.github.io/omnixai/llasma)
 
 ## Philosophy
 
