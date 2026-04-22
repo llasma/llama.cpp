@@ -93,7 +93,11 @@ soft link BitNet/models
 
 ## D. Theories & Visions
 
-1. [Omnihash & DJSON Decentralised JSON](https://omnixtar.github.io/contract/)
+1. Omnihash Contract -- a new kind of Free Software License, with new clauses on Separation of Disclosure and Royalties:
+
+- Other parties may inspect and test the code for non-commercial puroses, including research (DISCLOSURE) BUT must PAY the owners an agreed fees for commercial operations, including government funded activities (ROYALTIES).
+
+- [Omnihash & DJSON Decentralised JSON](https://omnixtar.github.io/contract/)
 
 2. [Omni*Web & Omniscientia](https://omnixtar.github.io/omnixai/llasma)
 
